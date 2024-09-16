@@ -42,8 +42,14 @@ class _HomeTabPageState extends State<HomeTabPage> {
   Widget build(BuildContext context) {
     bool showLoading = songs.isEmpty;
 
-    return Scaffold(
-      body: showLoading ? getProgressBar() : getListView()
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text('Home', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.black
+      ),
+      child: Scaffold(
+        body: showLoading ? getProgressBar() : getListView()
+      )
     );
   }
 

@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
@@ -40,6 +39,14 @@ class _NowPlayingPageState extends State<NowPlayingPage> with SingleTickerProvid
   late LoopMode _loopMode;
   bool _isFavorite = false;
 
+  void _showSnackBar(String message) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      duration: const Duration(milliseconds: 1000)
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -73,72 +80,70 @@ class _NowPlayingPageState extends State<NowPlayingPage> with SingleTickerProvid
           )
         ),
         middle: const Text('Now playing', style: TextStyle(color: Colors.white)),
-        trailing: IconButton(
-          onPressed: () {},
-          icon: const Icon(Icons.more_vert_rounded),
-          color: Colors.white
-        ),
         backgroundColor: Colors.transparent
       ),
       child: Scaffold(
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 16),
-              const Text('Album', style: TextStyle(color: Colors.white70, fontSize: 12)),
-              Text(_song.album, style: const TextStyle(color: Colors.white)),
-              const SizedBox(height: 48),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: FadeInImage.assetNetwork(
-                  placeholder: 'assets/itunes.png',
-                  image: _song.image,
-                  width: screenWidth - delta,
-                  height: screenWidth - delta,
-                  imageErrorBuilder: (context, error, stackTrace) {
-                    return Image.asset('assets/itunes.png',
-                      width: screenWidth - delta,
-                      height: screenWidth - delta,
-                    );
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 64, left: 24, right: 24, bottom: 16),
-                child: SizedBox(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(_song.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), textAlign: TextAlign.left),
-                          const SizedBox(height: 5),
-                          Text(_song.artist, style: const TextStyle(fontSize: 14, color: Colors.grey), textAlign: TextAlign.left)
-                        ],
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _isFavorite = !_isFavorite;
-                          });
-                        },
-                        icon: !_isFavorite ? const Icon(Icons.favorite_outline) : const Icon(Icons.favorite)
-                      ),
-                    ],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 16),
+                const Text('Album', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                Text(_song.album, style: const TextStyle(color: Colors.white)),
+                const SizedBox(height: 48),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: FadeInImage.assetNetwork(
+                    placeholder: 'assets/itunes.png',
+                    image: _song.image,
+                    width: screenWidth - delta,
+                    height: screenWidth - delta,
+                    imageErrorBuilder: (context, error, stackTrace) {
+                      return Image.asset('assets/itunes.png',
+                        width: screenWidth - delta,
+                        height: screenWidth - delta,
+                      );
+                    },
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 10, left: 26, right: 24, bottom: 16),
-                child: _progressBar()
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 0, left: 15, right: 15, bottom: 16),
-                child: _mediaButtons()
-              )
-            ],
+                Padding(
+                  padding: const EdgeInsets.only(top: 64, left: 24, right: 24, bottom: 16),
+                  child: SizedBox(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(_song.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), textAlign: TextAlign.left),
+                            const SizedBox(height: 5),
+                            Text(_song.artist, style: const TextStyle(fontSize: 14, color: Colors.grey), textAlign: TextAlign.left)
+                          ],
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _isFavorite = !_isFavorite;
+                            });
+                            _showSnackBar(_isFavorite ? 'Added to favorites' : 'Removed from favorites');
+                          },
+                          icon: !_isFavorite ? const Icon(Icons.favorite_outline) : const Icon(Icons.favorite)
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, left: 26, right: 24, bottom: 16),
+                  child: _progressBar()
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 0, left: 15, right: 15, bottom: 16),
+                  child: _mediaButtons()
+                )
+              ],
+            )
           )
         ),
       )
