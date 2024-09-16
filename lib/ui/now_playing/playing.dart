@@ -51,8 +51,14 @@ class _NowPlayingPageState extends State<NowPlayingPage> with SingleTickerProvid
   void initState() {
     super.initState();
     _song = widget.playingSong;
-    _audioPlayerManager = AudioPlayerManager(songUrl: _song.source);
-    _audioPlayerManager.init();
+    _audioPlayerManager = AudioPlayerManager();
+    if (_audioPlayerManager.songUrl.compareTo(_song.source) != 0) {
+      _audioPlayerManager.updateSongUrl(_song.source);
+      _audioPlayerManager.prepare(isNewSong: true);
+    } else {
+      _audioPlayerManager.prepare(isNewSong: false);
+    }
+
     _selectedItemIndex = widget.songs.indexOf(widget.playingSong);
     _loopMode = LoopMode.off;
 
@@ -60,6 +66,9 @@ class _NowPlayingPageState extends State<NowPlayingPage> with SingleTickerProvid
       if (state.processingState == ProcessingState.completed) {
         _navigateSong('next');
       }
+      // if (state.processingState == ProcessingState.ready) {
+      //   _audioPlayerManager.player.play();
+      // }
     });
   }
 
@@ -152,7 +161,6 @@ class _NowPlayingPageState extends State<NowPlayingPage> with SingleTickerProvid
 
   @override
   void dispose() {
-    _audioPlayerManager.dispose();
     super.dispose();
   }
 
