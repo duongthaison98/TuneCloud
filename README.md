@@ -1,6 +1,6 @@
-# music_app
+# TuneCloud
 
-Son's Music App project.
+Son's TuneCloud project.
 
 - 1: Download Android Studio -> Download Dart -> Download Flutter.
 - 2: Get into pubspec.yaml and press "Pub get" on top right corner or open Terminal of Android Studio and type command "flutter pub get".
