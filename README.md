@@ -13,3 +13,11 @@ There are 2 ways you can build your project to an .apk app:
 1. In the head navigation of Android Studio, click Build -> Flutter -> Build APK
 2. Or just open Terminal and type command "flutter build apk".
 When the app is built, the path to your .apk is "/build/app/outputs/flutter-apk/app-release.apk"
+
+## How to build IOS
+1. Type "open ios/Runner.xcworkspace" to open file.
+2. In Xcode, select the project in the left sidebar and go to the "Signing & Capabilities" tab.
+    - Set your Team to an active Apple Developer account.
+    - Set the Bundle Identifier to a unique identifier.
+    - Set the Deployment Target to the desired iOS version.
+3. Type "flutter build ios" to build app.

@@ -84,7 +84,7 @@ class _NowPlayingPageState extends State<NowPlayingPage> with SingleTickerProvid
             icon: const Icon(CupertinoIcons.chevron_back),
             color: Colors.white,
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context, _song);
             }
           )
         ),
@@ -220,9 +220,7 @@ class _NowPlayingPageState extends State<NowPlayingPage> with SingleTickerProvid
             margin: const EdgeInsets.all(8),
             width: 48,
             height: 48,
-            child: const CircularProgressIndicator(
-              color: Colors.white,
-            ),
+            child: const CircularProgressIndicator(color: Colors.white),
           );
         } else if (playing != true) {
           return MediaButtonControl(

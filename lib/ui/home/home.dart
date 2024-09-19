@@ -1,21 +1,23 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:music_app/ui/home/viewmodel.dart';
-import 'package:music_app/ui/now_playing/audio_player_manager.dart';
 import 'package:music_app/ui/now_playing/playing.dart';
 import 'package:music_app/data/model/song.dart';
 
 class HomeTab extends StatelessWidget {
-  const HomeTab({super.key});
+  final Function(Song, List<Song>) onSongSelected;
+
+  const HomeTab({super.key, required this.onSongSelected});
 
   @override
   Widget build(BuildContext context) {
-    return const HomeTabPage();
+    return HomeTabPage(onSongSelected: onSongSelected);
   }
 }
 
 class HomeTabPage extends StatefulWidget {
-  const HomeTabPage({super.key});
+  final Function(Song, List<Song>) onSongSelected;
+  const HomeTabPage({super.key, required this.onSongSelected});
 
   @override
   State<HomeTabPage> createState() => _HomeTabPageState();
@@ -23,7 +25,6 @@ class HomeTabPage extends StatefulWidget {
 
 class _HomeTabPageState extends State<HomeTabPage> {
   List<Song> songs = [];
-
   late MusicAppViewModel _viewModel;
 
   @override
@@ -57,13 +58,12 @@ class _HomeTabPageState extends State<HomeTabPage> {
   @override
   void dispose() {
     _viewModel.songStream.close();
-    AudioPlayerManager().dispose();
     super.dispose();
   }
 
   Widget getProgressBar() {
     return const Center(
-      child: CircularProgressIndicator(),
+      child: CircularProgressIndicator()
     );
   }
 
@@ -86,61 +86,29 @@ class _HomeTabPageState extends State<HomeTabPage> {
               },
             ),
           ),
-          title: Text(
-            songs[index].title
-          ),
-          subtitle: Text(
-            songs[index].artist,
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 12
-            ),
-          ),
+          title: Text(songs[index].title),
+          subtitle: Text(songs[index].artist, style: const TextStyle(color: Colors.grey, fontSize: 12)),
           trailing: IconButton(
             icon: const Icon(Icons.more_vert_rounded),
             onPressed: () {
-              showBottomSheet();
+
             },
           ),
           onTap: () {
-            Navigator.push(context,
-              CupertinoPageRoute(builder: (context) {
-                return NowPlaying(
-                  songs: songs,
-                  playingSong: songs[index]
-                );
-              })
-            );
+            // Navigator.push(context,
+            //   CupertinoPageRoute(builder: (context) {
+            //     return NowPlaying(
+            //       songs: songs,
+            //       playingSong: songs[index]
+            //     );
+            //   })
+            // );
+            widget.onSongSelected(songs[index], songs);
           },
         );
       },
       itemCount: songs.length,
       shrinkWrap: true,
     );
-  }
-
-  void showBottomSheet() {
-    showModalBottomSheet(context: context, builder: (context) {
-      return ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        child: Container(
-          height: 400,
-          color: Colors.green,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                const Text('Modal Bottom Sheet'),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Close Bottom Sheet')
-                )
-              ],
-            ),
-          )
-        ),
-      );
-    });
   }
 }
