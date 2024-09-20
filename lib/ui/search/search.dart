@@ -142,14 +142,14 @@ class _SearchPageState extends State<SearchPage> {
               ),
             ),
             onTap: () {
-              Navigator.push(context,
-                CupertinoPageRoute(builder: (context) {
-                  return NowPlaying(
-                    songs: filteredSongs,
-                    playingSong: filteredSongs[index]
-                  );
-                })
-              );
+              // Navigator.push(context,
+              //   CupertinoPageRoute(builder: (context) {
+              //     return NowPlaying(
+              //       songs: filteredSongs,
+              //       playingSong: filteredSongs[index]
+              //     );
+              //   })
+              // );
             },
           )
         );

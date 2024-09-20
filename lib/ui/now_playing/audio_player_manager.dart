@@ -20,6 +20,7 @@ class AudioPlayerManager {
 
     if (isNewSong) {
       player.setUrl(songUrl);
+      player.play();
     }
   }
 

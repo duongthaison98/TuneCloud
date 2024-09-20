@@ -1,14 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:music_app/ui/home/viewmodel.dart';
+import 'package:music_app/components/play_button.dart';
+import 'package:music_app/components/song_navigator.dart';
 import 'package:music_app/ui/mini_player/mini_player.dart';
 import 'package:music_app/ui/now_playing/audio_player_manager.dart';
-import 'package:music_app/ui/now_playing/playing.dart';
 import 'package:music_app/data/model/song.dart';
 import 'package:music_app/ui/search/search.dart';
 import 'package:music_app/ui/settings/settings.dart';
 import 'package:music_app/ui/home/home.dart';
+import 'package:music_app/ui/now_playing/playing.dart';
 
 class MusicApp extends StatelessWidget {
   const MusicApp({super.key});
@@ -47,8 +48,13 @@ class _MusicLayoutState extends State<MusicLayout> {
 
   List<Song> songs = [];
   Song? playingSong;
-  int _selectedIndex = 0;
+  int _selectedItemIndex = 0;
   bool isMiniPlayerVisible = false;
+  bool _isShuffle = false;
+  late LoopMode _loopMode = LoopMode.off;
+
+  late AudioPlayerManager _audioPlayerManager;
+  late SongNavigator songNavigator;
 
   @override
   void initState() {
@@ -58,6 +64,14 @@ class _MusicLayoutState extends State<MusicLayout> {
       const SearchTab(),
       const SettingsTab(),
     ]);
+
+    _audioPlayerManager = AudioPlayerManager();
+    songNavigator = SongNavigator((newSong) {
+      setState(() {
+        playingSong = newSong;
+        _selectedItemIndex++;
+      });
+    });
   }
 
   @override
@@ -87,19 +101,48 @@ class _MusicLayoutState extends State<MusicLayout> {
           bottom: 50,
           child: AnimatedOpacity(
             opacity: isMiniPlayerVisible ? 1.0 : 0.0, // Animate opacity
-            duration: const Duration(milliseconds: 200), // Fade duration
+            duration: const Duration(milliseconds: 300), // Fade duration
             curve: Curves.easeInOut, // Smooth transition curve
-            child: playingSong != null ? MiniPlayer(
-              song: playingSong!,
-              onPlayPause: () => {},
-              onNext: () => {},
-              onPrevious: () => {},
-              onClose: () => setState(() {
-                playingSong = null;
-                isMiniPlayerVisible = false;
-              }),
-              isPlaying: true,  // Track your play state
-            ) : const SizedBox.shrink(),
+            child: playingSong != null
+              ? GestureDetector(
+                onTap: () async {
+                  final result = await Navigator.push(context,
+                    CupertinoPageRoute(builder: (context) {
+                      return NowPlaying(
+                        songs: songs,
+                        playingSong: playingSong!,
+                        isShuffle: _isShuffle,
+                        loopMode: _loopMode
+                      );
+                    })
+                  );
+
+                  print("---------result: $result");
+
+                  if (result != null) {
+                    setState(() {
+                      _isShuffle = result['isShuffle'];
+                      _loopMode = result['loopMode'];
+                      playingSong = result['playingSong'];
+                      songs = result['songs'];
+                    });
+                  }
+                },
+                child: MiniPlayer(
+                  song: playingSong!,
+                  isShuffle: _isShuffle,
+                  loopMode: _loopMode,
+                  onPlayPause: () => PlayButton(audioPlayerManager: _audioPlayerManager, buttonSize: 20),
+                  onNext: () => songNavigator.navigateSong('next', _audioPlayerManager, songs, playingSong!, _selectedItemIndex, _isShuffle),
+                  onPrevious: () => {},
+                  onClose: () => setState(() {
+                    playingSong = null;
+                    isMiniPlayerVisible = false;
+                  }),
+                  isPlaying: true,  // Track your play state
+                ),
+              )
+             : const SizedBox.shrink(),
           )
         )
       ]
@@ -126,6 +169,23 @@ class _MusicLayoutState extends State<MusicLayout> {
       playingSong = selectedSong;
       songs = songList;
       isMiniPlayerVisible = true;
+    });
+
+    if (_audioPlayerManager.songUrl.compareTo(playingSong!.source) != 0) {
+      _audioPlayerManager.updateSongUrl(playingSong!.source);
+      _audioPlayerManager.prepare(isNewSong: true);
+    } else {
+      _audioPlayerManager.prepare(isNewSong: false);
+    }
+
+    _selectedItemIndex = songList.indexOf(selectedSong);
+
+    _audioPlayerManager.player.setLoopMode(_loopMode);
+
+    _audioPlayerManager.player.playerStateStream.listen((state) {
+      if (state.processingState == ProcessingState.completed) {
+        songNavigator.navigateSong('next', _audioPlayerManager, songs, playingSong!, _selectedItemIndex, _isShuffle);
+      }
     });
   }
 }

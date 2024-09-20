@@ -3,29 +3,36 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:music_app/components/play_button.dart';
 import 'package:music_app/data/model/song.dart';
 import 'package:music_app/ui/now_playing/audio_player_manager.dart';
 
 class NowPlaying extends StatelessWidget {
-  const NowPlaying({super.key, required this.songs, required this.playingSong});
+  const NowPlaying({super.key, required this.songs, required this.playingSong, required this.isShuffle, required this.loopMode});
 
   final Song playingSong;
   final List<Song> songs;
+  final bool isShuffle;
+  final LoopMode loopMode;
 
   @override
   Widget build(BuildContext context) {
     return NowPlayingPage(
       songs: songs,
-      playingSong: playingSong
+      playingSong: playingSong,
+      isShuffle: isShuffle,
+      loopMode: loopMode
     );
   }
 }
 
 class NowPlayingPage extends StatefulWidget {
-  const NowPlayingPage({super.key, required this.songs, required this.playingSong});
+  const NowPlayingPage({super.key, required this.songs, required this.playingSong, required this.isShuffle, required this.loopMode});
 
-  final Song playingSong;
   final List<Song> songs;
+  final Song playingSong;
+  final bool isShuffle;
+  final LoopMode loopMode;
 
   @override
   State<NowPlayingPage> createState() => _NowPlayingPageState();
@@ -35,8 +42,9 @@ class _NowPlayingPageState extends State<NowPlayingPage> with SingleTickerProvid
   late AudioPlayerManager _audioPlayerManager;
   late int _selectedItemIndex;
   late Song _song;
-  bool _isShuffle = false;
+  late bool _isShuffle;
   late LoopMode _loopMode;
+
   bool _isFavorite = false;
 
   void _showSnackBar(String message) {
@@ -60,16 +68,20 @@ class _NowPlayingPageState extends State<NowPlayingPage> with SingleTickerProvid
     }
 
     _selectedItemIndex = widget.songs.indexOf(widget.playingSong);
-    _loopMode = LoopMode.off;
+
+    _isShuffle = widget.isShuffle;
+    _loopMode = widget.loopMode;
 
     _audioPlayerManager.player.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
         _navigateSong('next');
       }
-      // if (state.processingState == ProcessingState.ready) {
-      //   _audioPlayerManager.player.play();
-      // }
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -84,7 +96,12 @@ class _NowPlayingPageState extends State<NowPlayingPage> with SingleTickerProvid
             icon: const Icon(CupertinoIcons.chevron_back),
             color: Colors.white,
             onPressed: () {
-              Navigator.pop(context, _song);
+              Navigator.pop(context, {
+                'isShuffle': _isShuffle,
+                'loopMode': _loopMode,
+                'playingSong': _song,
+                'songs': widget.songs
+              });
             }
           )
         ),
@@ -159,11 +176,6 @@ class _NowPlayingPageState extends State<NowPlayingPage> with SingleTickerProvid
     );
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   Widget _mediaButtons() {
     return SizedBox(
       child: Row(
@@ -171,7 +183,7 @@ class _NowPlayingPageState extends State<NowPlayingPage> with SingleTickerProvid
         children: [
           MediaButtonControl(function: _setShuffle, icon: Icons.shuffle, color: _getShuffleColor(), size: 24),
           MediaButtonControl(function: () => _navigateSong('prev'), icon: Icons.skip_previous, color: Colors.white, size: 36),
-          _playButton(),
+          PlayButton(audioPlayerManager: _audioPlayerManager, buttonSize: 48),
           MediaButtonControl(function: () => _navigateSong('next'), icon: Icons.skip_next, color: Colors.white, size: 36),
           MediaButtonControl(function: _setRepeat, icon: _getRepeatIcon(), color: _getRepeatColor(), size: 24)
         ],
@@ -204,52 +216,6 @@ class _NowPlayingPageState extends State<NowPlayingPage> with SingleTickerProvid
           timeLabelTextStyle: const TextStyle(fontSize: 12, color: Colors.grey),
           timeLabelPadding: 4
         );
-      }
-    );
-  }
-
-  StreamBuilder<PlayerState> _playButton() {
-    return StreamBuilder(
-      stream: _audioPlayerManager.player.playerStateStream,
-      builder: (context, snapshot) {
-        final playState = snapshot.data;
-        final processingState = playState?.processingState;
-        final playing = playState?.playing;
-        if (processingState == ProcessingState.loading || processingState == ProcessingState.buffering) {
-          return Container(
-            margin: const EdgeInsets.all(8),
-            width: 48,
-            height: 48,
-            child: const CircularProgressIndicator(color: Colors.white),
-          );
-        } else if (playing != true) {
-          return MediaButtonControl(
-            function: () {
-              _audioPlayerManager.player.play();
-            },
-            icon: Icons.play_arrow,
-            color: Colors.white,
-            size: 48
-          );
-        } else if (processingState != ProcessingState.completed) {
-          return MediaButtonControl(
-            function: () {
-              _audioPlayerManager.player.pause();
-            },
-            icon: Icons.pause,
-            color: Colors.white,
-            size: 48
-          );
-        } else {
-          return MediaButtonControl(
-            function: () {
-              _audioPlayerManager.player.seek(Duration.zero);
-            },
-            icon: Icons.replay,
-            color: Colors.white,
-            size: 48
-          );
-        }
       }
     );
   }

@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:music_app/ui/home/viewmodel.dart';
-import 'package:music_app/ui/now_playing/playing.dart';
 import 'package:music_app/data/model/song.dart';
 
 class HomeTab extends StatelessWidget {
@@ -90,25 +89,15 @@ class _HomeTabPageState extends State<HomeTabPage> {
           subtitle: Text(songs[index].artist, style: const TextStyle(color: Colors.grey, fontSize: 12)),
           trailing: IconButton(
             icon: const Icon(Icons.more_vert_rounded),
-            onPressed: () {
-
-            },
+            onPressed: () {},
           ),
           onTap: () {
-            // Navigator.push(context,
-            //   CupertinoPageRoute(builder: (context) {
-            //     return NowPlaying(
-            //       songs: songs,
-            //       playingSong: songs[index]
-            //     );
-            //   })
-            // );
             widget.onSongSelected(songs[index], songs);
           },
         );
       },
       itemCount: songs.length,
-      shrinkWrap: true,
+      shrinkWrap: true
     );
   }
 }
